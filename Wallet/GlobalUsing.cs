@@ -1,0 +1,12 @@
+﻿global using Microsoft.EntityFrameworkCore;
+global using System.Net.Mail;
+global using Wallet.Application.Services.Abstract;
+global using Wallet.Domain.Constants;
+global using Wallet.Domain.Dtos.Transfer;
+global using Wallet.Domain.Dtos.Wallet;
+global using Wallet.Domain.Entities;
+global using Wallet.Domain.Enums;
+global using Wallet.Persistence.Context;
+global using Wallet.Shared.Domain.Constant;
+global using Wallet.Shared.Domain.Enums;
+global using Wallet.Shared.Result;
