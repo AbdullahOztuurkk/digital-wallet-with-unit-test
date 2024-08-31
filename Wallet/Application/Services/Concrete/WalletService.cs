@@ -29,7 +29,7 @@ public class WalletService : IWalletService
 
         return response;
     }
-
+    
     public async Task<BaseResponse<WalletResponseDto>> Freeze(string walletNumber)
     {
         var response = new BaseResponse<WalletResponseDto>();

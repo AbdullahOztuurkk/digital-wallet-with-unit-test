@@ -14,6 +14,7 @@ public class WalletInsertDtoValidator : AbstractValidator<WalletInsertDto>
 
         RuleFor(x => x.Msisdn)
             .NotEmpty()
+            .Length(10)
             .Matches(@"^\d{10}$")
             .WithMessage(SystemError.E_0001.ErrorCode);
     }

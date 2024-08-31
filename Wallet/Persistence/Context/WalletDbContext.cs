@@ -7,6 +7,7 @@ public class WalletDbContext : DbContext, IBaseDbContext
     {
         
     }
+
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<WalletEntity> Wallets { get; set; }
 
