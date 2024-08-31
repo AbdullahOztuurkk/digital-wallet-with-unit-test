@@ -49,7 +49,8 @@ public class TransferService : ITransferService
             ProcessSubType = (int)request.TransferType,
             ToAccountNumber = request.ToAccountNumber,
             ToWalletNumber = request.ToWalletNumber,
-            TransactionDate = DateTime.UtcNow.AddHours(3)
+            TransactionDate = DateTime.UtcNow.AddHours(3),
+            Status = StatusType.Pending,
         };
 
         await _context.Transactions.AddAsync(transaction);
