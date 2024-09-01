@@ -102,6 +102,7 @@ public class TransferService : ITransferService
     public async Task<BaseResponse> Wallet2Wallet(Wallet2WalletRequestDto request)
     {
         var response = new BaseResponse();
+        var now = DateTime.UtcNow.AddHours(3);
 
         var transaction = await _context.Transactions.FirstOrDefaultAsync(x => x.ProcessGuid == request.ProcessGuid);
         if (transaction == null)
@@ -109,14 +110,14 @@ public class TransferService : ITransferService
             return response.Fail(SystemError.E_0014);
         }
 
-        if (transaction.TransactionDate.AddMinutes(2) > DateTime.UtcNow.AddHours(3))
+        if (transaction.ProcessType != ProcessType.BalanceTransfer || transaction.ProcessSubType != (int)TransferType.Wallet2Wallet)
+        {
+            return response.Fail(SystemError.E_0015);
+        }
+        
+        if (transaction.TransactionDate.AddMinutes(2) <= now)
         {
             return response.Fail(SystemError.E_0011);
-        }
-
-        if (transaction.ProcessType != ProcessType.BalanceTransfer && transaction.ProcessSubType == (int)TransferType.Wallet2Wallet)
-        {
-            return response.Fail(SystemError.E_0014);
         }
 
         if (transaction.Status != StatusType.Pending)

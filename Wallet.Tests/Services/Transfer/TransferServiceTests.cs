@@ -10,7 +10,7 @@ namespace Wallet.Tests.Services.Transfer;
 public partial class TransferServiceTests
 {
     private TransferService _transferService;
-    private WalletDbContext? _context;
+    private WalletDbContext _context;
     private PreTransferRequestDtoValidator preTransferRequestValidator;
     private PreTransferRequestDto preTransferRequest;
 
@@ -194,7 +194,7 @@ public partial class TransferServiceTests
     }
 
     [Test]
-    public async Task PreTransfer_WhenAllValidationsAreValid_ShouldBeSuccessResponse()
+    public async Task PreTransfer_WhenAllValidationsAreValid_ShouldReturnSuccessResponse()
     {
         //Arrange
         preTransferRequest.ToWalletNumber = "12345678901";
@@ -227,5 +227,158 @@ public partial class TransferServiceTests
 
         //Assert
         result.IsSuccess.Should().BeTrue();        
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenProcessGuidIsInValid_ShouldFail()
+    {
+        //Arrange
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(Arg.Any<string>(),0);
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0014.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenProcessTypeAndProcessSubTypeIsInValid_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(guid,10);
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Account,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0015.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenTransactionDateIsInValid_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(guid,10);
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3).AddMinutes(-3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Wallet,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0011.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenTransactionStatusIsNotPending_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(guid,10);
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3).AddMinutes(1),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Wallet,
+            ProcessGuid = guid,
+            Status = StatusType.Success,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0012.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenAmountDoesntMatch_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(guid,10);
+        var transaction = new Transaction
+        {
+            Amount = 11,//Should be different from request.MatchAmount
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Wallet,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0013.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Wallet_WhenAllValidationsAreValid_ShouldReturnSuccessResponse()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2WalletRequest = new Wallet2WalletRequestDto(guid,10);
+        var transaction = new Transaction
+        {
+            Amount = wallet2WalletRequest.MatchAmount,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3).AddMinutes(1),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Wallet,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Wallet(wallet2WalletRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeTrue();
     }
 }
