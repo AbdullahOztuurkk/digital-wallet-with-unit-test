@@ -3,10 +3,6 @@ using Wallet.Domain.Entities;
 
 namespace Wallet.Tests.Services.Transfer;
 
-/*
-    This file has unit tests of PreTransfer method.
-*/
-
 public partial class TransferServiceTests
 {
     private TransferService _transferService;
