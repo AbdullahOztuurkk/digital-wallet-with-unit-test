@@ -64,6 +64,7 @@ public class TransferService : ITransferService
     public async Task<BaseResponse> Wallet2Account(Wallet2AccountRequestDto request)
     {
         var response = new BaseResponse();
+        var now = DateTime.UtcNow.AddHours(3);
 
         var transaction = await _context.Transactions.FirstOrDefaultAsync(x => x.ProcessGuid == request.ProcessGuid);
         if(transaction == null)
@@ -71,12 +72,12 @@ public class TransferService : ITransferService
             return response.Fail(SystemError.E_0001);
         }
 
-        if(transaction.TransactionDate.AddMinutes(2) > DateTime.UtcNow.AddHours(3))
+        if (transaction.TransactionDate.AddMinutes(2) <= now)
         {
             return response.Fail(SystemError.E_0011);
         }
 
-        if(transaction.Status != StatusType.Pending)
+        if (transaction.Status != StatusType.Pending)
         {
             return response.Fail(SystemError.E_0012);
         }
@@ -86,9 +87,9 @@ public class TransferService : ITransferService
             return response.Fail(SystemError.E_0013);
         }
 
-        if( transaction.ProcessType != ProcessType.BalanceTransfer && transaction.ProcessSubType == (int)TransferType.Wallet2Account)
+        if( transaction.ProcessType != ProcessType.BalanceTransfer || transaction.ProcessSubType != (int)TransferType.Wallet2Account)
         {
-            return response.Fail(SystemError.E_0014);
+            return response.Fail(SystemError.E_0015);
         }
 
         //Transfer money to account from wallet logic

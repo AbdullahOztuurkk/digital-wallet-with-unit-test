@@ -381,4 +381,132 @@ public partial class TransferServiceTests
         //Assert
         result.IsSuccess.Should().BeTrue();
     }
+
+    [Test]
+    public async Task Wallet2Account_WhenProcessGuidIsInValid_ShouldFail()
+    {
+        //Arrange
+        var wallet2AccountRequest = new Wallet2AccountRequestDto(Arg.Any<string>(),Arg.Any<string>());
+
+        //Act
+        var result = await _transferService.Wallet2Account(wallet2AccountRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0001.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Account_WhenProcessTypeAndProcessSubTypeIsInValid_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2AccountRequest = new Wallet2AccountRequestDto(guid,Arg.Any<string>());
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Wallet,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Account(wallet2AccountRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0015.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Account_WhenTransactionDateIsInValid_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2AccountRequest = new Wallet2AccountRequestDto(guid,Arg.Any<string>());
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3).AddMinutes(-3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Account,
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Account(wallet2AccountRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0011.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Account_WhenTransactionStatusIsNotPending_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var wallet2AccountRequest = new Wallet2AccountRequestDto(guid,Arg.Any<string>());
+        var transaction = new Transaction
+        {
+            Amount = 10,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3).AddMinutes(1),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Account,
+            ProcessGuid = guid,
+            Status = StatusType.Success,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Account(wallet2AccountRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0012.ErrorCode);
+    }
+
+    [Test]
+    public async Task Wallet2Account_WhenAmountDoesntMatch_ShouldFail()
+    {
+        //Arrange
+        var guid = Guid.NewGuid().ToString("N");
+        var accountNumber = "12345678901";
+        var wallet2AccountRequest = new Wallet2AccountRequestDto(guid,accountNumber);
+        var transaction = new Transaction
+        {
+            Amount = 11,
+            FromWalletNumber = "12345678901",
+            TransactionDate = DateTime.UtcNow.AddHours(3),
+            ProcessType = ProcessType.BalanceTransfer,
+            ProcessSubType = (int)TransferType.Wallet2Account,
+            ToAccountNumber = "123456", //Should be different from request.MatchAccountNumber
+            ProcessGuid = guid,
+            Status = StatusType.Pending,
+        };
+
+        _context.Transactions.Add(transaction);
+        _context.SaveChanges();
+
+        //Act
+        var result = await _transferService.Wallet2Account(wallet2AccountRequest);
+
+        //Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(SystemError.E_0013.ErrorCode);
+    }
 }
