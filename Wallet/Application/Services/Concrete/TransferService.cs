@@ -28,7 +28,7 @@ public class TransferService : ITransferService
             var toWallet = await _context.Wallets.FirstOrDefaultAsync(x => x.WalletNumber == request.ToWalletNumber && x.Status != StatusType.Passive);
             if (toWallet == null)
             {
-                return response.Fail(SystemError.E_0005);
+                return response.Fail(SystemError.E_0007);
             }
         }
         else if( request.TransferType == TransferType.Wallet2Account)
@@ -106,12 +106,17 @@ public class TransferService : ITransferService
         var transaction = await _context.Transactions.FirstOrDefaultAsync(x => x.ProcessGuid == request.ProcessGuid);
         if (transaction == null)
         {
-            return response.Fail(SystemError.E_0001);
+            return response.Fail(SystemError.E_0014);
         }
 
         if (transaction.TransactionDate.AddMinutes(2) > DateTime.UtcNow.AddHours(3))
         {
             return response.Fail(SystemError.E_0011);
+        }
+
+        if (transaction.ProcessType != ProcessType.BalanceTransfer && transaction.ProcessSubType == (int)TransferType.Wallet2Wallet)
+        {
+            return response.Fail(SystemError.E_0014);
         }
 
         if (transaction.Status != StatusType.Pending)
@@ -124,10 +129,6 @@ public class TransferService : ITransferService
             return response.Fail(SystemError.E_0013);
         }
 
-        if (transaction.ProcessType != ProcessType.BalanceTransfer && transaction.ProcessSubType == (int)TransferType.Wallet2Wallet)
-        {
-            return response.Fail(SystemError.E_0014);
-        }
 
         //Transfer wallet to wallet logic
 

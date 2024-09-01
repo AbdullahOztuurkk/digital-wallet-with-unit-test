@@ -27,7 +27,7 @@ public class PreTransferRequestDto
             {
                 RuleFor(x => x.ToWalletNumber)
                     .NotEmpty()
-                    .Must(x => Int64.TryParse(x, out _))
+                    .Must(x => long.TryParse(x, out _) && x.Length == 11)
                     .WithMessage(SystemError.E_0006.ErrorMessage);
             });
 

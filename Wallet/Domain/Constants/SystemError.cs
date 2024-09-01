@@ -15,4 +15,5 @@ public static class SystemError
     public static readonly Error E_0012 = new Error(nameof(E_0012),"Transfer operation has been canceled due of transaction status.");
     public static readonly Error E_0013 = new Error(nameof(E_0013),"Transfer operation has been canceled due of unmatched amount.");
     public static readonly Error E_0014 = new Error(nameof(E_0014),"Transaction cannot be found!.");
+    public static readonly Error E_0015 = new Error(nameof(E_0015),"Invalid Transaction!.");
 }

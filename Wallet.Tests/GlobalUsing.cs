@@ -1,0 +1,10 @@
+﻿global using FluentAssertions;
+global using Microsoft.EntityFrameworkCore;
+global using Wallet.Application.Services.Concrete;
+global using Wallet.Domain.Constants;
+global using Wallet.Domain.Dtos.Transfer;
+global using Wallet.Domain.Enums;
+global using Wallet.Persistence.Context;
+global using Wallet.Shared.Domain.Enums;
+global using static Wallet.Domain.Dtos.Transfer.PreTransferRequestDto;
+global using WalletEntity = Wallet.Domain.Entities.Wallet;

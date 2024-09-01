@@ -1,11 +1,12 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Wallet.Application.Services.Concrete;
 using Wallet.Domain.Dtos.Wallet;
 using Wallet.Persistence.Context;
 using Wallet.Shared.Domain.Enums;
 
-namespace Wallet.Tests;
+namespace Wallet.Tests.Services.Wallet;
 
 public class WalletServiceTests
 {
@@ -41,11 +42,11 @@ public class WalletServiceTests
     public void CreateWallet_WhenValuesAreCorrect_ValidationResultMustBeValid()
     {
         //Arrange
-        var insertDto = new WalletInsertDto("abdullah@gmail.com","1234567890");
+        var insertDto = new WalletInsertDto("abdullah@gmail.com", "1234567890");
 
         //Act
         var result = insertDtoValidator.Validate(insertDto);
-        
+
         //Assert
         Assert.That(result.IsValid, Is.True);
     }
@@ -54,7 +55,7 @@ public class WalletServiceTests
     public void CreateWallet_WhenEmailAreCorrect_ValidationResultMustBeNotValid()
     {
         //Arrange
-        var insertDto = new WalletInsertDto("abdullah@gmail.com","123457890");
+        var insertDto = new WalletInsertDto("abdullah@gmail.com", "123457890");
 
         //Act
         var result = insertDtoValidator.Validate(insertDto);
@@ -67,7 +68,7 @@ public class WalletServiceTests
     public void CreateWallet_WhenMsisdnAreCorrect_ValidationResultMustBeNotValid()
     {
         //Arrange
-        var insertDto = new WalletInsertDto("abdullahgmail.com","1234567890");
+        var insertDto = new WalletInsertDto("abdullahgmail.com", "1234567890");
 
         //Act
         var result = insertDtoValidator.Validate(insertDto);
@@ -80,7 +81,7 @@ public class WalletServiceTests
     public void CreateWallet_WhenValuesAreNotCorrect_ValidationResultMustBeNotValid()
     {
         //Arrange
-        var insertDto = new WalletInsertDto("abdullahgmail.com","123456789a");
+        var insertDto = new WalletInsertDto("abdullahgmail.com", "123456789a");
 
         //Act
         var result = insertDtoValidator.Validate(insertDto);
@@ -94,7 +95,7 @@ public class WalletServiceTests
     public async Task CreateWallet_WhenValuesAreCorrect_WalletPropertiesShouldBeOkay()
     {
         //Arrange
-        var insertDto = new WalletInsertDto("abdullah@gmail.com","1234567890");
+        var insertDto = new WalletInsertDto("abdullah@gmail.com", "1234567890");
 
         //Act
         var result = insertDtoValidator.Validate(insertDto);
